@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+    <style>
+.cursor::after {
+  content: "|";
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+</style>
+
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% include 'demo/navbar.html' %}
+    
+    <!-- Welcome Hero Section -->
+   <div class="py-12 px-6">
+  <div class="max-w-7xl mx-auto">
+  <h1 class="text-4xl md:text-5xl font-bold mb-3">
+  <span id="welcome-text" class="inline-block"></span>
+
+  <span
+    id="username"
+    class="inline-block ml-2 opacity-0 text-blue-600"
+  >{{ request.user.username|upper }} 👋
+  </span>
+</h1>
+
+
+    <p class="text-lg md:text-xl text-gray-400">
+      Manage your orders, customers, and inventory all in one place.
+    </p>
+  </div>
+</div>
+
+    
+    <div class="p-4 md:p-6 animate-fade-in-up flex-grow">
+    {% if messages %}
+
+<div id="message-container">
+{% for message in messages %}
+    <div class="alert {{ message.tags }}">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+        {{ message }}
+    </div>
+{% endfor %}
+</div>
+
+<script>
+    // Automatically close the alert after 5 seconds
+    setTimeout(function() {
+        let messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            let alerts = messageContainer.getElementsByClassName('alert');
+            for (let i = 0; i < alerts.length; i++) {
+                alerts[i].style.opacity = '0';
+                // Wait for the fade-out transition to finish before hiding the element
+                setTimeout(function(){ alerts[i].style.display = 'none'; }, 600); 
+            }
+        }
+    }, 5000); // 5000ms = 5 seconds
+</script>
+{% endif %}
+
+    <!-- Header Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        <div class="bg-white p-5 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-gray-700">Total Orders</h2>
+            <p class="text-3xl font-bold text-blue-600 mt-2">{{ orders.count|default:0 }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-gray-700">Orders Delivered</h2>
+            <p class="text-3xl font-bold text-green-600 mt-2">{{ delivered.count|default:0 }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-gray-700">Orders Pending</h2>
+            <p class="text-3xl font-bold text-red-600 mt-2">{{ pending.count|default:0 }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content Tables -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-6 hidden md:block">
+        <!-- Customers Table Card -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-xl font-bold">Recent Customers</h1>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto flex-grow">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="py-2">Customer</th>
+                            <th class="py-2">Phone</th>
+                            <th class="py-2 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in customers|dictsortreversed:"date_created"|slice:":5" %}
+                        <tr class="border-b">
+                            <td class="py-2">{{ i.name }}</td>
+                            <td class="py-2">{{ i.phone }}</td>
+                            <td class="py-2 text-center"><a href="{% url 'customer' i.id %}" class="text-blue-500 hover:underline">View</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="py-4 text-center text-gray-500">No customers found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- View All Button -->
+            <div class="mt-4 text-center">
+                <a href="{% url 'all_customers' %}" class="block w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">View All Customers</a>
+            </div>
+        </div>
+
+        <!-- Orders Table Card -->
+        <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-xl font-bold">Recent Orders</h1>
+            </div>
+            <!-- Table -->
+            <div class="overflow-x-auto flex-grow">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="py-2">Product</th>
+                            <th class="py-2">Quantity</th>
+                            <th class="py-2">Customer</th>
+                            <th class="py-2">Date Ordered</th>
+                            <th class="py-2">Status</th>
+                            <th class="py-2 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in orders|dictsortreversed:"date_created"|slice:":5" %}
+                        <tr class="border-b">
+                            <td class="py-2">{{j.product}}</td>
+                            <td class="py-2">{{j.quantity}}</td>
+                            <td class="py-2">{{j.customer}}</td>
+                            <td class="py-2">{{j.date_created|date:"M d, Y"}}</td>
+                            <td class="py-2">{{j.status}}</td>
+                            <td class="py-2 text-center space-x-2">
+                                <a href="{% url 'update_order' j.id %}?next={{ request.path }}" class="text-blue-500 hover:underline">Update</a>
+                                <a href="{% url 'delete_order' j.id %}?next={{ request.path }}" class="text-red-500 hover:underline">Remove</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="py-4 text-center text-gray-500">No recent orders found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- View All Button -->
+            <div class="mt-4 text-center">
+                <a href="{% url 'all_orders' %}" class="block w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">View All Orders</a>
+            </div>
+        </div>
+    </div>
+    <div class="block md:hidden grid grid-cols-3 gap-2 mt-5 ">
+        <a href="{% url 'create_product' %}" class="flex justify-center items-center bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">Add Product</a>
+        <a href="{% url 'create_order' %}" class="flex justify-center items-center bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">Add Order</a>
+        <a href="{% url 'create_customer' %}" class="flex justify-center items-center bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">Add Customer</a>
+        <a href="{% url 'products' %}" class="flex justify-center items-center bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">View Products</a>
+        <a href="{% url 'all_orders' %}" class="flex justify-center items-center bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">View Orders</a>
+        <a href="{% url 'all_customers' %}" class="flex justify-center items-center bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-semibold transition">View Customers</a>
+    </div>
+    </div>
+    {% include 'demo/footer.html' %}
+ <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const welcomeText = "Welcome Back,";
+  const welcomeEl = document.getElementById("welcome-text");
+  const userEl = document.getElementById("username");
+
+  let index = 0;
+  const speed = 90;
+
+  function typeWelcome() {
+    if (index < welcomeText.length) {
+      welcomeEl.textContent += welcomeText.charAt(index);
+      index++;
+      setTimeout(typeWelcome, speed);
+    } else {
+      setTimeout(() => {
+        userEl.classList.remove("opacity-0");
+        userEl.classList.add("animate-fade-in-up");
+      }, 200);
+    }
+  }
+
+  typeWelcome();
+});
+</script>
+
+
+
+</body>
+</html>

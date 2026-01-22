@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html{
+            scroll-behavior: smooth;
+        }
+        .alert {
+        padding: 20px;
+        background-color: #4CAF50; /* Green */
+        color: white;
+        margin-bottom: 15px;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        border-radius: 5px;
+        opacity: 1;
+        transition: opacity 0.6s;
+    }
+
+    .alert.success {background-color: #4CAF50;}
+    .alert.info {background-color: #2196F3;}
+    .alert.warning {background-color: #ff9800;}
+    .alert.error {background-color: #f44336;}
+
+    .closebtn {
+        margin-left: 15px;
+        color: white;
+        font-weight: bold;
+        float: right;
+        font-size: 22px;
+        line-height: 20px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .closebtn:hover {
+        color: black;
+    }
+
+    </style>
+</head>
+<body class="bg-gray-100 animate-fade-in-up flex flex-col min-h-screen">
+    {% include 'demo/navbar.html' %}
+    <div class="p-4 md:p-6 flex-grow">
+        {% if messages %}
+
+<div id="message-container">
+{% for message in messages %}
+    <div class="alert {{ message.tags }}">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+        {{ message }}
+    </div>
+{% endfor %}
+</div>
+
+<script>
+    // Automatically close the alert after 5 seconds
+    setTimeout(function() {
+        let messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            let alerts = messageContainer.getElementsByClassName('alert');
+            for (let i = 0; i < alerts.length; i++) {
+                alerts[i].style.opacity = '0';
+                // Wait for the fade-out transition to finish before hiding the element
+                setTimeout(function(){ alerts[i].style.display = 'none'; }, 600); 
+            }
+        }
+    }, 5000); // 5000ms = 5 seconds
+</script>
+{% endif %}
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">All Products</h1>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'create_product' %}?next={{ request.path }}" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-semibold">Add Product</a>
+                <a href="{% url 'home' %}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm font-semibold">Back to Home</a>
+            </div>
+        </div>
+
+        <!-- Search and Filter Form -->
+        <form method="GET" action="{% url 'products' %}" class="mb-6">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-grow flex">
+                    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search by name, company...." class="w-full px-4 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600">Search</button>
+                </div>
+                <div class="w-full md:w-1/4">
+                    <select name="category" onchange="this.form.submit()" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <!-- Products Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b bg-gray-50">
+                        <th class="py-3 px-4">Name</th>
+                        <th class="py-3 px-4">Price</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">litre</th>
+                        <th class="py-3 px-4">company</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in products %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4">{{ i.name }}</td>
+                        <td class="py-3 px-4">${{ i.price|floatformat:2 }}</td>
+                        <td class="py-3 px-4">{{ i.category }}</td>
+                        <td class="py-3 px-4">{{ i.litre }} L</td>
+                        <td class="py-3 px-4">
+                            {% if i.company %}
+                                {% for j in i.company.all %}
+                                    {{ j.name }}
+                                {% endfor %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-6 text-center text-gray-500">No products found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+    {% include 'demo/footer.html' %}
+</body>
+</html>

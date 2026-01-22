@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <style>
+         html{
+            scroll-behavior: smooth;
+        }
+         body {
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+         body.loaded {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 animate-fade-in-up flex flex-col min-h-screen">
+    {% include 'demo/navbar.html' %}
+    <div class="p-4 md:p-6 flex-grow">
+        {% if messages %}
+
+<div id="message-container">
+{% for message in messages %}
+    <div class="alert {{ message.tags }}">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+        {{ message }}
+    </div>
+{% endfor %}
+</div>
+
+<script>
+    // Automatically close the alert after 5 seconds
+    setTimeout(function() {
+        let messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            let alerts = messageContainer.getElementsByClassName('alert');
+            for (let i = 0; i < alerts.length; i++) {
+                alerts[i].style.opacity = '0';
+                // Wait for the fade-out transition to finish before hiding the element
+                setTimeout(function(){ alerts[i].style.display = 'none'; }, 600); 
+            }
+        }
+    }, 5000); // 5000ms = 5 seconds
+</script>
+{% endif %}
+<script>
+  window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+  });
+</script>
+
+
+    <!-- HERO -->
+    <section class="hero mb-8">
+        <div class="relative rounded-xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=60" alt="warehouse shelves" class="w-full h-64 sm:h-96 object-cover">
+            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div class="text-center text-white px-4">
+                    <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">Refresh Your Inventory. <br> Boost Your Business.</h1>
+                    <p class="mt-3 text-lg md:text-xl opacity-90">Discover top brands and stock up in minutes.</p>
+                    <a href="{% url 'user_home' %}#search" class="mt-4 inline-block bg-blue-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-blue-700">Browse Products</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+
+    <section class="categories mb-8">
+        <h2 class="text-xl font-bold mb-4">Shop Our Categories</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+           <form method="GET" action="{% url 'user_home' %}#search" class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center hover:shadow-lg transition">
+                <img src="{% static 'admin/img/soft drinks.webp' %}" alt="Carbonated Drinks" class="w-full h-32 object-cover rounded-md mb-3">
+                <h3 class="font-semibold">Carbonated Drinks</h3>
+                <input type="hidden" name="q" value="carbonated">
+                <button type="submit" class="mt-3 bg-green-100 text-green-800 px-3 py-1 text-sm rounded"> Browse Now </button>
+           </form>
+
+            <form method="GET" action="{% url 'user_home' %}#search" class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center hover:shadow-lg transition">
+                <img src="{% static 'admin/img/natural juice.jpg' %}" alt="Natural Juices" class="w-full h-32 object-cover rounded-md mb-3">
+                <h3 class="font-semibold">Natural Juices</h3>
+                <input type="hidden" name="q" value="juice">
+                <button type="submit" class="mt-3 bg-green-100 text-green-800 px-3 py-1 text-sm rounded">Browse Now</button>
+            </form>
+            <form method="GET" action="{% url 'user_home' %}#search" class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center hover:shadow-lg transition">
+                <img src="{% static 'admin/img/watter_botteles.png' %}" alt="Bottled Water" class="w-full h-32 object-cover rounded-md mb-3">
+                <h3 class="font-semibold">Bottled Water</h3>
+                <input type="hidden" name="q" value="water">
+                <button type="submit" class="mt-3 bg-green-100 text-green-800 px-3 py-1 text-sm rounded">Browse Now</button>
+            </form>
+           <form method="GET" action="{% url 'user_home' %}#search" class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center hover:shadow-lg transition">
+                <img src="{% static 'admin/img/energy drinks.jpg' %}" alt="Energy & Sports" class="w-full h-32 object-cover rounded-md mb-3">
+                <h3 class="font-semibold">Energy & Sports</h3>
+                <input type="hidden" name="q" value="energy">
+                <button type="submit" class="mt-3 bg-green-100 text-green-800 px-3 py-1 text-sm rounded">Browse Now</button>
+            </form>
+        </div>
+        </form>
+
+    </section>
+
+    <!-- TRUSTED STRIP -->
+    <div class="my-6 bg-white rounded-lg p-4 text-center border border-gray-100">
+        <p class="text-sm text-gray-600">Trusted by Retailers Nationwide</p>
+    </div>
+
+    <!-- FEATURED -->
+    <section class="featured mb-8">
+        <h2 class="text-xl font-bold mb-4">Featured Products</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {% for product in featured %}
+            <a href="{% url 'create_order' product.id %}?next={{ request.path }}" class="rounded-lg shadow-md overflow-hidden group">
+                <div class="relative h-44 {% cycle 'bg-yellow-50' 'bg-green-50' 'bg-blue-50' 'bg-pink-50' %} flex items-end p-4">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}"  style="mix-blend-mode: multiply;" class="absolute right-4 top-4 h-32 w-auto object-contain transform group-hover:scale-105 transition">
+                    {% else %}
+                        <img src="https://placehold.co/160x160?text={{ product.name }}" alt="{{ product.name }}" class="absolute right-4 top-4 h-32 w-auto object-contain transform group-hover:scale-105 transition">
+                    {% endif %}
+                    <span class="inline-block bg-white text-xs text-gray-700 px-2 py-1 rounded shadow">In Stock</span>
+                </div>
+                <div class="bg-white p-4">
+                    <h3 class="font-semibold text-gray-900">{{ product.name }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">{% for company in product.company.all %}{{ company.name }}{% endfor %}</p>
+                    <p class="text-sm text-gray-600 mt-2">{{ product.litre }} L</p>
+                    <div class="mt-3 flex items-center justify-between">
+                        <span class="text-lg font-bold">${{ product.price|floatformat:2 }}</span>
+                        <span class="text-xs text-gray-500">Cap: 12 units</span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-full text-center py-12 bg-white rounded-xl shadow-sm">
+                <p class="text-gray-500 text-lg">No featured products available.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Search and full product grid -->
+    <div class="mb-8" id="search">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <!-- Search Form -->
+            <form method="GET" action="{% url 'user_home' %}#search" class="w-full flex">
+                <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search products..." class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700">Search</button>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6">
+            {% for product in products %}
+            <a href="{% url 'create_order' product.id %}?next={{ request.path }}" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+                <div class="h-48 bg-gray-200 relative overflow-hidden group">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="mix-blend-mode: multiply;" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                    {% else %}
+                    <img src="https://placehold.co/600x400?text={{ product.name }}" alt="{{ product.name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                    {% endif %}
+                </div>
+                <div class="p-2 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 line-clamp-1">{{ product.name }}</h3>
+                            <p class="text-xs text-gray-500">{% for company in product.company.all %}{{ company.name }}{% endfor %}</p>
+                        </div>
+                        <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">${{ product.price|floatformat:2 }}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">{{ product.litre }} L</p>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-full text-center py-12 bg-white rounded-xl shadow-sm">
+                <p class="text-gray-500 text-lg">No products found matching your search.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% include 'demo/footer.html' %}
+</body>
+</html>
