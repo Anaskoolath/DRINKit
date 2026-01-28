@@ -175,7 +175,7 @@ def create_order(request, pk=None):
                     messages.error(request, f"{field}: {error}")
     
     context={'form':form, 'product':product, 'next': request.GET.get('next', '/home')}
-    return render( request,'demo/create_order.html',context)
+    return render( request,'demo/create_Order.html',context)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
@@ -299,7 +299,7 @@ def create_order_bulk(request,pk):
         formset=order_bulk(queryset=models.order.objects.none(), instance=customer)
     
     context={'formset':formset, 'next': next_url}
-    return render( request,'demo/create_order_bulk.html',context)
+    return render( request,'demo/create_Order_bulk.html',context)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin','customers'])
